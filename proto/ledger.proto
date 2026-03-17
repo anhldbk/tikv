@@ -1,0 +1,67 @@
+syntax = "proto3";
+
+package ledger;
+
+// The Ledger service provides operations for a simple ledger state machine.
+// All operations are strongly consistent (linearizable).
+service Ledger {
+  // Get retrieves the current balance for a given key.
+  rpc Get(GetRequest) returns (GetResponse);
+
+  // Add increases the balance for a given key by the specified amount.
+  rpc Add(AddRequest) returns (AddResponse);
+
+  // Subtract decreases the balance for a given key by the specified amount.
+  // This operation will fail if the resulting balance would be negative.
+  rpc Subtract(SubtractRequest) returns (SubtractResponse);
+}
+
+// Request to retrieve the balance of a key.
+message GetRequest {
+  // The key representing the account or entity.
+  bytes key = 1;
+}
+
+// Response containing the current balance.
+message GetResponse {
+  // The current balance of the key.
+  uint64 balance = 1;
+  // Optional error message if the key does not exist or another error occurred.
+  string error = 2;
+}
+
+// Request to add an amount to a key's balance.
+message AddRequest {
+  // The key representing the account or entity.
+  bytes key = 1;
+  // The amount to add to the balance.
+  uint64 amount = 2;
+}
+
+// Response indicating the success or failure of the add operation.
+message AddResponse {
+  // True if the addition was successful.
+  bool success = 1;
+  // The new balance after the addition (optional, but useful).
+  uint64 new_balance = 2;
+  // Optional error message if the operation failed.
+  string error = 3;
+}
+
+// Request to subtract an amount from a key's balance.
+message SubtractRequest {
+  // The key representing the account or entity.
+  bytes key = 1;
+  // The amount to subtract from the balance.
+  uint64 amount = 2;
+}
+
+// Response indicating the success or failure of the subtract operation.
+message SubtractResponse {
+  // True if the subtraction was successful.
+  bool success = 1;
+  // The new balance after the subtraction (optional, but useful).
+  uint64 new_balance = 2;
+  // Optional error message if the operation failed (e.g., "Insufficient funds").
+  string error = 3;
+}
