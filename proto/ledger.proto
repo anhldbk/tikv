@@ -36,6 +36,8 @@ message AddRequest {
   bytes key = 1;
   // The amount to add to the balance.
   uint64 amount = 2;
+  // Unique identifier for the request to ensure idempotency.
+  bytes id = 3;
 }
 
 // Response indicating the success or failure of the add operation.
@@ -54,6 +56,8 @@ message SubtractRequest {
   bytes key = 1;
   // The amount to subtract from the balance.
   uint64 amount = 2;
+  // Unique identifier for the request to ensure idempotency.
+  bytes id = 3;
 }
 
 // Response indicating the success or failure of the subtract operation.

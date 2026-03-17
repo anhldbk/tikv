@@ -21,7 +21,28 @@ TiKV's architecture typically flows like this for a standard request:
 `gRPC Service -> Transaction Layer (Percolator/MVCC) -> Raftstore -> RocksDB`
 
 For the high-performance Ledger state machine, the proposed architecture is:
-`gRPC Ledger Service -> (Bypass MVCC) -> Raftstore (Custom Command) -> Ledger Apply Delegate -> RocksDB`
+
+```plantuml
+@startuml
+skinparam componentStyle uml2
+
+actor Client
+component "gRPC Ledger Service" as grpc
+component "Raftstore\n(Custom Command)" as raftstore
+component "Ledger Apply Delegate" as apply_delegate
+database "RocksDB" as rocksdb
+
+Client -> grpc : Request (Get/Add/Subtract)
+grpc -> raftstore : Propose Ledger Command
+note right of grpc : Bypasses MVCC/Transaction Layer
+raftstore -> apply_delegate : Apply Committed Command
+apply_delegate -> rocksdb : Read/Write Raw KVs
+rocksdb --> apply_delegate : Result
+apply_delegate --> raftstore : Apply Result
+raftstore --> grpc : Response Callback
+grpc --> Client : Response
+@enduml
+```
 
 By bypassing MVCC, we eliminate the overhead of timestamp allocation (from PD), lock resolution, and multi-version storage management. We treat the ledger values as single-version data managed directly by the Raft state machine.
 
